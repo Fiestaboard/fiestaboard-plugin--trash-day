@@ -1,0 +1,322 @@
+{
+  "id": "trash_day",
+  "name": "Trash & Recycling Day",
+  "version": "1.0.0",
+  "description": "Never miss collection day: shows the next trash, recycling, compost or yard-waste pickup from a simple weekly/biweekly schedule, with an optional evening-before board reminder.",
+  "author": "FiestaBoard Team",
+  "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--trash-day",
+  "documentation": "README.md",
+  "icon": "trash-2",
+  "category": "utility",
+  "supports_triggers": true,
+  "min_refresh_seconds": 300,
+  "settings_schema": {
+    "type": "object",
+    "properties": {
+      "streams": {
+        "type": "array",
+        "title": "Collection Streams",
+        "description": "Each bin that gets collected (max 4). For biweekly pickups, enter any date you know the bin was (or will be) collected so the plugin can work out which weeks are yours.",
+        "maxItems": 4,
+        "default": [
+          {
+            "name": "Trash",
+            "weekday": "Tuesday",
+            "frequency": "weekly",
+            "anchor_date": "",
+            "color": "blue"
+          }
+        ],
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name",
+              "description": "Short label, e.g. Trash, Recycling, Compost, Yard Waste",
+              "maxLength": 12
+            },
+            "weekday": {
+              "type": "string",
+              "title": "Collection Day",
+              "enum": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday"
+              ],
+              "default": "Tuesday"
+            },
+            "frequency": {
+              "type": "string",
+              "title": "Frequency",
+              "enum": [
+                "weekly",
+                "biweekly"
+              ],
+              "enumNames": [
+                "Every week",
+                "Every other week"
+              ],
+              "default": "weekly"
+            },
+            "anchor_date": {
+              "type": "string",
+              "title": "Known Collection Date",
+              "description": "YYYY-MM-DD of any past or future collection day (biweekly only; ignored for weekly)"
+            },
+            "color": {
+              "type": "string",
+              "title": "Color",
+              "enum": [
+                "red",
+                "orange",
+                "yellow",
+                "green",
+                "blue",
+                "violet",
+                "white"
+              ],
+              "default": "blue"
+            }
+          },
+          "required": [
+            "name",
+            "weekday",
+            "frequency"
+          ]
+        }
+      },
+      "timezone": {
+        "type": "string",
+        "title": "Timezone",
+        "description": "IANA timezone used to work out what day it is.",
+        "default": "America/Los_Angeles",
+        "ui:widget": "timezone"
+      },
+      "reminder_hour": {
+        "type": "integer",
+        "title": "Reminder Hour",
+        "description": "Hour of the day (0-23) on the evening before collection from which {{trash_day.is_tomorrow}} turns on and the board reminder fires.",
+        "default": 18,
+        "minimum": 0,
+        "maximum": 23
+      },
+      "enable_triggers": {
+        "type": "boolean",
+        "title": "Take Over the Board the Night Before",
+        "description": "When on, the board switches to a 'take the bins out' reminder once per collection, starting at the Reminder Hour the evening before.",
+        "default": false
+      },
+      "refresh_seconds": {
+        "type": "integer",
+        "title": "Refresh Interval (seconds)",
+        "description": "How often to recompute the schedule.",
+        "default": 900,
+        "minimum": 300,
+        "maximum": 86400
+      },
+      "enabled": {
+        "type": "boolean",
+        "title": "Enable Trash & Recycling Day",
+        "default": false
+      }
+    }
+  },
+  "env_vars": [
+    {
+      "name": "TRASH_DAY_ENABLED",
+      "required": false,
+      "description": "Enable the Trash & Recycling Day plugin",
+      "default": "false"
+    }
+  ],
+  "variables": {
+    "groups": {
+      "next": {
+        "label": "Next Pickup"
+      },
+      "streams": {
+        "label": "Streams"
+      }
+    },
+    "simple": {
+      "next_date": {
+        "description": "Date of the next collection day (any stream)",
+        "type": "string",
+        "group": "next",
+        "max_length": 6,
+        "example": "Sep 16"
+      },
+      "next_weekday": {
+        "description": "Weekday name of the next collection day",
+        "type": "string",
+        "group": "next",
+        "max_length": 9,
+        "example": "Tuesday"
+      },
+      "days_until": {
+        "description": "Days until the next collection day (0 = today)",
+        "type": "number",
+        "group": "next",
+        "max_length": 2,
+        "example": "3"
+      },
+      "is_today": {
+        "description": "Whether a collection happens today",
+        "type": "boolean",
+        "group": "next",
+        "max_length": 5,
+        "example": "false"
+      },
+      "is_tomorrow": {
+        "description": "Whether a collection happens tomorrow and it is already past the Reminder Hour",
+        "type": "boolean",
+        "group": "next",
+        "max_length": 5,
+        "example": "true"
+      },
+      "next_streams": {
+        "description": "Comma-separated names of the streams collected on the next collection day",
+        "type": "string",
+        "group": "next",
+        "max_length": 44,
+        "example": "Trash, Recycling"
+      },
+      "message": {
+        "description": "One-line summary of the next pickup",
+        "type": "string",
+        "group": "next",
+        "max_length": 22,
+        "example": "NO PICKUP FOR 4 DAYS"
+      }
+    },
+    "arrays": {
+      "streams": {
+        "label_field": "name",
+        "item_fields": [
+          "name",
+          "next_date",
+          "days_until",
+          "color"
+        ]
+      }
+    }
+  },
+  "max_lengths": {
+    "streams.*.name": 12,
+    "streams.*.next_date": 6,
+    "streams.*.days_until": 2,
+    "streams.*.color": 6
+  },
+  "color_rules_schema": {
+    "days_until": {
+      "type": "threshold",
+      "description": "Color by how soon the next pickup is",
+      "default_rules": [
+        {
+          "condition": "==",
+          "value": 0,
+          "color": "red"
+        },
+        {
+          "condition": "==",
+          "value": 1,
+          "color": "yellow"
+        },
+        {
+          "condition": ">=",
+          "value": 2,
+          "color": "green"
+        }
+      ]
+    }
+  },
+  "fiestaboard_version": ">=8.0.0",
+  "teaser": "{67} TRASH TUE",
+  "previews": [
+    {
+      "device_type": "flagship",
+      "rows": [
+        "     NEXT PICKUP",
+        "    TUESDAY SEP 16",
+        "",
+        "{67} TRASH       SEP 16",
+        "{66} RECYCLING   SEP 16",
+        "{64} YARD WASTE  SEP 23"
+      ]
+    },
+    {
+      "device_type": "note",
+      "rows": [
+        "NEXT PICKUP",
+        "TUESDAY SEP 16",
+        "{67}TRASH {66}RECYCLE"
+      ]
+    }
+  ],
+  "demo": {
+    "flagship": {
+      "name": "Trash Day Demo",
+      "template": [
+        "NEXT PICKUP",
+        "{{trash_day.next_weekday}} {{trash_day.next_date}}",
+        "{{trash_day.message}}",
+        "{{trash_day.streams.0.name}} {{trash_day.streams.0.next_date}}",
+        "{{trash_day.streams.1.name}} {{trash_day.streams.1.next_date}}",
+        "{{trash_day.streams.2.name}} {{trash_day.streams.2.next_date}}"
+      ],
+      "line_metadata": [
+        {
+          "alignment": "center",
+          "wrap": false
+        },
+        {
+          "alignment": "center",
+          "wrap": false
+        },
+        {
+          "alignment": "center",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        }
+      ]
+    },
+    "note": {
+      "name": "Trash Day (Note)",
+      "template": [
+        "NEXT PICKUP",
+        "{{trash_day.next_weekday}} {{trash_day.next_date}}",
+        "{{trash_day.next_streams}}"
+      ],
+      "line_metadata": [
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": false
+        },
+        {
+          "alignment": "left",
+          "wrap": true
+        }
+      ]
+    }
+  }
+}
