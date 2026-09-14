@@ -258,6 +258,14 @@
       ]
     }
   ],
+  "screenshots": [
+    {
+      "src": "docs/board-display.png",
+      "alt": "Trash & Recycling Day displayed on a Vestaboard",
+      "caption": "Never miss collection day: shows the next trash, recycling, compost or yard-waste pickup from a simple weekly/biweekly schedule, with an optional evening-before board reminder.",
+      "primary": true
+    }
+  ],
   "demo": {
     "flagship": {
       "name": "Trash Day Demo",

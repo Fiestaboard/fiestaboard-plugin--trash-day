@@ -10,6 +10,8 @@ The Trash & Recycling Day plugin is purely schedule-driven — there is no API, 
 You describe up to four collection **streams** (a name, a weekday, weekly or every-other-week), and the
 plugin works out the next pickup for each one, plus which streams go out on the next collection day.
 
+![Trash & Recycling Day Display](./docs/board-display.png)
+
 It can also take over the board the evening before a collection, so the bins actually make it to the curb.
 
 ## Template Variables
