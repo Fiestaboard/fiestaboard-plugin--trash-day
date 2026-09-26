@@ -1,7 +1,7 @@
 {
   "id": "trash_day",
   "name": "Trash & Recycling Day",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Never miss collection day: shows the next trash, recycling, compost or yard-waste pickup from a simple weekly/biweekly schedule, with an optional evening-before board reminder.",
   "author": "FiestaBoard Team",
   "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--trash-day",
@@ -255,6 +255,19 @@
         "NEXT PICKUP",
         "TUESDAY SEP 16",
         "{67}TRASH {66}RECYCLE"
+      ]
+    },
+    {
+      "device_type": "note_array",
+      "notes_wide": 2,
+      "notes_tall": 2,
+      "rows": [
+        "          NEXT PICKUP",
+        "        TUESDAY SEP 16",
+        "",
+        "{67} TRASH              SEP 16",
+        "{66} RECYCLING          SEP 16",
+        "{64} YARD WASTE         SEP 23"
       ]
     }
   ],
